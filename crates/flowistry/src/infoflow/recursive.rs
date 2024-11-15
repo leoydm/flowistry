@@ -80,11 +80,11 @@ impl<'tcx> FlowAnalysis<'_, 'tcx> {
       }
     };
 
-    let unsafety = tcx.mir_unsafety_check_result(def_id.expect_local());
-    if !unsafety.used_unsafe_blocks.is_empty() {
-      debug!("  Func contains unsafe blocks");
-      return false;
-    }
+    // let unsafety = tcx.mir_unsafety_check_result(def_id.expect_local());
+    // if !unsafety.used_unsafe_blocks.is_empty() {
+    //   debug!("  Func contains unsafe blocks");
+    //   return false;
+    // }
 
     let parent_arg_places = utils::arg_places(parent_args);
     let any_closure_inputs = parent_arg_places.iter().any(|(_, place)| {

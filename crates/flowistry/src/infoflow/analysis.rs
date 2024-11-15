@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use indexical::impls::RustcIndexMatrix as IndexMatrix;
+use indexical::bitset::rustc::IndexMatrix;
 use log::{debug, trace};
 use rustc_data_structures::fx::FxHashMap as HashMap;
 use rustc_hir::{def_id::DefId, BodyId};

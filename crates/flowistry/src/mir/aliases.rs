@@ -198,7 +198,7 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
       let def = match place.refs_in_projection().next() {
         Some((ptr, proj)) => {
           let ptr_ty = ptr.ty(body.local_decls(), tcx).ty;
-          (ptr_ty.builtin_deref(true).unwrap().ty, proj.to_vec())
+          (ptr_ty.builtin_deref(true).unwrap(), proj.to_vec())
         }
         None => (
           body.local_decls()[place.local].ty,
@@ -251,7 +251,7 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
       .rows()
       .flat_map(|r1| subset.iter(r1).map(move |r2| (r1, r2)))
       .collect::<Vec<_>>();
-    let subset_graph = VecGraph::new(num_regions, edge_pairs);
+    let subset_graph = VecGraph::<_, false>::new(num_regions, edge_pairs);
     let subset_sccs = Sccs::<RegionVid, RegionSccIndex>::new(&subset_graph);
     let mut scc_to_regions =
       IndexVec::from_elem_n(HybridBitSet::new_empty(num_regions), subset_sccs.num_sccs());
@@ -379,7 +379,7 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
     let ptr_ty = ptr.ty(self.body.local_decls(), self.tcx).ty;
     let (region, orig_ty) = match ptr_ty.kind() {
       _ if ptr_ty.is_box() => (UNKNOWN_REGION, ptr_ty.boxed_ty()),
-      TyKind::RawPtr(TypeAndMut { ty, .. }) => (UNKNOWN_REGION, *ty),
+      TyKind::RawPtr(ty, ..) => (UNKNOWN_REGION, *ty),
       TyKind::Ref(Region(Interned(RegionKind::ReVar(region), _)), ty, _) => {
         (*region, *ty)
       }

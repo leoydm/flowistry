@@ -201,9 +201,9 @@ struct LoanCollector<'a, 'tcx> {
 }
 
 impl<'tcx> TypeVisitor<TyCtxt<'tcx>> for LoanCollector<'_, 'tcx> {
-  type BreakTy = ();
+  type Result = ControlFlow<()>;
 
-  fn visit_ty(&mut self, ty: Ty<'tcx>) -> ControlFlow<Self::BreakTy> {
+  fn visit_ty(&mut self, ty: Ty<'tcx>) -> Self::Result {
     match ty.kind() {
       TyKind::Ref(_, _, mutability) => {
         self.stack.push(*mutability);
@@ -221,7 +221,7 @@ impl<'tcx> TypeVisitor<TyCtxt<'tcx>> for LoanCollector<'_, 'tcx> {
     ControlFlow::Continue(())
   }
 
-  fn visit_region(&mut self, region: Region<'tcx>) -> ControlFlow<Self::BreakTy> {
+  fn visit_region(&mut self, region: Region<'tcx>) -> Self::Result {
     let region = match region.kind() {
       RegionKind::ReVar(region) => region,
       RegionKind::ReStatic => RegionVid::from_usize(0),
