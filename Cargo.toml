@@ -4,9 +4,13 @@ exclude = ["ide/src/tests/mock_project"]
 resolver = "2"
 
 [workspace.dependencies]
-rustc_plugin = "=0.8.0-nightly-2024-01-06"
-rustc_utils = {version = "=0.8.0-nightly-2024-01-06", features = ["indexical"]}
-indexical = {version = "0.3.1", default-features = false, features = ["rustc"]}
+rustc_plugin = { path = "../rustc_plugin/crates/rustc_plugin" }
+rustc_utils = { path = "../rustc_plugin/crates/rustc_utils", features = [
+    "indexical",
+] }
+indexical = { version = "0.6.1", default-features = false, features = [
+    "rustc",
+] }
 
 [profile.bench]
 debug = true

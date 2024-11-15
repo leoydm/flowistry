@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use indexical::impls::RustcIndexMatrix as IndexMatrix;
+use indexical::bitset::rustc::IndexMatrix;
 use log::{debug, trace};
 use rustc_data_structures::fx::FxHashMap as HashMap;
 use rustc_hir::{def_id::DefId, BodyId};
@@ -107,12 +107,15 @@ impl<'a, 'tcx> FlowAnalysis<'a, 'tcx> {
       .aliases(place)
       .iter()
       .flat_map(|alias| self.place_info.conflicts(*alias));
-    let provenance = place.refs_in_projection().flat_map(|(place_ref, _)| {
-      self
-        .place_info
-        .aliases(Place::from_ref(place_ref, self.tcx))
-        .iter()
-    });
+    let provenance =
+      place
+        .refs_in_projection(self.body, self.tcx)
+        .flat_map(|(place_ref, _)| {
+          self
+            .place_info
+            .aliases(Place::from_ref(place_ref, self.tcx))
+            .iter()
+        });
     conflicts.chain(provenance).copied().collect()
   }
 

@@ -34,7 +34,11 @@ pub fn compile_body_with_range(
     + Send,
 ) {
   borrowck_facts::enable_mir_simplification();
-  test_utils::compile_body_with_range(input, compute_target, callback)
+  test_utils::CompileBuilder::new(input).compile(|result| {
+    let target = compute_target();
+    let (body_id, body_with_facts) = result.as_body_with_range(target);
+    callback(result.tcx, body_id, body_with_facts, target)
+  });
 }
 
 pub fn compile_body(

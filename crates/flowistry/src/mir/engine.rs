@@ -15,7 +15,7 @@ use std::rc::Rc;
 
 use either::Either;
 use indexical::ToIndex;
-use rustc_data_structures::{graph::WithSuccessors, work_queue::WorkQueue};
+use rustc_data_structures::{graph::Successors, work_queue::WorkQueue};
 use rustc_index::IndexVec;
 use rustc_middle::{
   mir::{traversal, Body, Location},

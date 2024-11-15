@@ -16,7 +16,7 @@ use rustc_index::{
 };
 use rustc_middle::{
   mir::{visit::Visitor, *},
-  ty::{Region, RegionKind, RegionVid, Ty, TyCtxt, TyKind, TypeAndMut},
+  ty::{Region, RegionKind, RegionVid, Ty, TyCtxt, TyKind},
 };
 use rustc_utils::{mir::place::UNKNOWN_REGION, timer::elapsed, PlaceExt};
 
@@ -188,17 +188,17 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
     let mut gather_borrows = GatherBorrows::default();
     gather_borrows.visit_body(&body_with_facts.body);
     for (region, kind, place) in gather_borrows.borrows {
-      if place.is_direct(body) {
+      if place.is_direct(body, tcx) {
         contains
           .entry(region)
           .or_default()
           .insert((place, kind.to_mutbl_lossy()));
       }
 
-      let def = match place.refs_in_projection().next() {
+      let def = match place.refs_in_projection(body, tcx).next() {
         Some((ptr, proj)) => {
           let ptr_ty = ptr.ty(body.local_decls(), tcx).ty;
-          (ptr_ty.builtin_deref(true).unwrap().ty, proj.to_vec())
+          (ptr_ty.builtin_deref(true).unwrap(), proj.to_vec())
         }
         None => (
           body.local_decls()[place.local].ty,
@@ -251,7 +251,7 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
       .rows()
       .flat_map(|r1| subset.iter(r1).map(move |r2| (r1, r2)))
       .collect::<Vec<_>>();
-    let subset_graph = VecGraph::new(num_regions, edge_pairs);
+    let subset_graph = VecGraph::<_, true>::new(num_regions, edge_pairs);
     let subset_sccs = Sccs::<RegionVid, RegionSccIndex>::new(&subset_graph);
     let mut scc_to_regions =
       IndexVec::from_elem_n(HybridBitSet::new_empty(num_regions), subset_sccs.num_sccs());
@@ -368,18 +368,21 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
     aliases.insert(place);
 
     // Places with no derefs, or derefs from arguments, have no aliases
-    if place.is_direct(self.body) {
+    if place.is_direct(self.body, self.tcx) {
       return aliases;
     }
 
     // place = after[*ptr]
-    let (ptr, after) = place.refs_in_projection().last().unwrap();
+    let (ptr, after) = place
+      .refs_in_projection(self.body, self.tcx)
+      .last()
+      .unwrap();
 
     // ptr : &'region orig_ty
     let ptr_ty = ptr.ty(self.body.local_decls(), self.tcx).ty;
     let (region, orig_ty) = match ptr_ty.kind() {
       _ if ptr_ty.is_box() => (UNKNOWN_REGION, ptr_ty.boxed_ty()),
-      TyKind::RawPtr(TypeAndMut { ty, .. }) => (UNKNOWN_REGION, *ty),
+      TyKind::RawPtr(ty, _) => (UNKNOWN_REGION, *ty),
       TyKind::Ref(Region(Interned(RegionKind::ReVar(region), _)), ty, _) => {
         (*region, *ty)
       }
