@@ -115,7 +115,7 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
       .unwrap()
       .subset_base
       .iter()
-      .cloned()
+      .map(|(r1, r2, i)| ((*r1).into(), (*r2).into(), *i))
       .filter(|(r1, r2, i)| constraint_selector(*r1, *r2, *i))
       .collect::<Vec<_>>();
 
