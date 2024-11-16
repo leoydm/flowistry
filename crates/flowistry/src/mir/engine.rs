@@ -43,7 +43,7 @@ impl<'tcx, A: Analysis<'tcx>> AnalysisResults<'tcx, A> {
   /// Same as [`rustc_mir_dataflow::Results::visit_reachable_with`](https://doc.rust-lang.org/nightly/nightly-rustc/rustc_mir_dataflow/struct.Results.html#method.visit_reachable_with).
   pub fn visit_reachable_with<'mir, V>(&mut self, body: &'mir Body<'tcx>, visitor: &mut V)
   where
-    V: ResultsVisitor<'mir, 'tcx, Self, FlowState = A::Domain>,
+    V: ResultsVisitor<'mir, 'tcx, Self, Domain = A::Domain>,
   {
     for (block, data) in traversal::reachable(body) {
       for statement_index in 0 ..= data.statements.len() {

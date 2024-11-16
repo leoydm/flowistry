@@ -16,7 +16,7 @@ use rustc_index::{
 };
 use rustc_middle::{
   mir::{visit::Visitor, *},
-  ty::{Region, RegionKind, RegionVid, Ty, TyCtxt, TyKind, TypeAndMut},
+  ty::{Region, RegionKind, RegionVid, Ty, TyCtxt, TyKind},
 };
 use rustc_utils::{mir::place::UNKNOWN_REGION, timer::elapsed, PlaceExt};
 
@@ -378,7 +378,10 @@ impl<'a, 'tcx> Aliases<'a, 'tcx> {
     // ptr : &'region orig_ty
     let ptr_ty = ptr.ty(self.body.local_decls(), self.tcx).ty;
     let (region, orig_ty) = match ptr_ty.kind() {
-      _ if ptr_ty.is_box() => (UNKNOWN_REGION, ptr_ty.boxed_ty()),
+      _ if ptr_ty.is_box() => (
+        UNKNOWN_REGION,
+        ptr_ty.boxed_ty().expect("Checked by is_box"),
+      ),
       TyKind::RawPtr(ty, ..) => (UNKNOWN_REGION, *ty),
       TyKind::Ref(Region(Interned(RegionKind::ReVar(region), _)), ty, _) => {
         (*region, *ty)

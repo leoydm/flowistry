@@ -168,7 +168,6 @@ impl<'tcx> FlowAnalysis<'_, 'tcx> {
 
       let mut projection = parent_toplevel_arg.projection.to_vec();
       let mut ty = parent_toplevel_arg.ty(self.body.local_decls(), tcx);
-      let parent_param_env = tcx.param_env(self.def_id);
       log::debug!("Adding child {child:?} to parent {parent_toplevel_arg:?}");
       for elem in child.projection.iter() {
         // Don't continue if we reach a private field
@@ -183,7 +182,6 @@ impl<'tcx> FlowAnalysis<'_, 'tcx> {
 
         ty = ty.projection_ty_core(
           tcx,
-          parent_param_env,
           &elem,
           |_, field, _| ty.field_ty(tcx, field),
           |_, ty| ty,

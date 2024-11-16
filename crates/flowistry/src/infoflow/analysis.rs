@@ -8,7 +8,7 @@ use rustc_middle::{
   mir::{visit::Visitor, *},
   ty::TyCtxt,
 };
-use rustc_mir_dataflow::{Analysis, AnalysisDomain};
+use rustc_mir_dataflow::Analysis;
 use rustc_utils::{
   mir::{
     control_dependencies::ControlDependencies,
@@ -231,7 +231,7 @@ impl<'a, 'tcx> FlowAnalysis<'a, 'tcx> {
   }
 }
 
-impl<'a, 'tcx> AnalysisDomain<'tcx> for FlowAnalysis<'a, 'tcx> {
+impl<'a, 'tcx> Analysis<'tcx> for FlowAnalysis<'a, 'tcx> {
   type Domain = FlowDomain<'tcx>;
 
   const NAME: &'static str = "FlowAnalysis";
@@ -251,9 +251,7 @@ impl<'a, 'tcx> AnalysisDomain<'tcx> for FlowAnalysis<'a, 'tcx> {
       }
     }
   }
-}
 
-impl<'a, 'tcx> Analysis<'tcx> for FlowAnalysis<'a, 'tcx> {
   fn apply_statement_effect(
     &mut self,
     state: &mut Self::Domain,
